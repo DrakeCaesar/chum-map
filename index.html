@@ -32,8 +32,8 @@
       }
       .collectible {
         position: absolute;
-        width: 10px;
-        height: 10px;
+        width: 32px;
+        height: 32px;
         background-color: yellow;
         border: 1px solid black;
         border-radius: 50%;
@@ -73,11 +73,11 @@
         document.querySelectorAll(".collectible").forEach((marker, index) => {
           const coord = collectibles[index];
           // Calculate the new position based on the current scale and origin
-          const transformedX = coord.x * scale + originX - 5;
-          const transformedY = coord.y * scale + originY - 5;
+          const transformedX = coord.x * scale + originX - 16;
+          const transformedY = coord.y * scale + originY - 16;
 
-          // Calculate the scale for the marker, ensuring it doesn't go below 10px
-          const markerScale = Math.max(scale, 10 / marker.offsetWidth);
+          // Calculate the scale for the marker, ensuring it doesn't go below 16px
+          const markerScale = Math.max(scale, 16 / marker.offsetWidth);
 
           // Apply the position and scaling to the marker
           marker.style.transform = `translate(${transformedX}px, ${transformedY}px) scale(${markerScale})`;
