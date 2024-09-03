@@ -32,9 +32,10 @@
       }
       .collectible {
         position: absolute;
-        width: 20px;
-        height: 20px;
-        background-color: red;
+        width: 10px;
+        height: 10px;
+        background-color: yellow;
+        border: 1px solid black;
         border-radius: 50%;
         cursor: pointer;
         transition: background-color 0.3s;
@@ -79,8 +80,8 @@
         document.querySelectorAll(".collectible").forEach((marker, index) => {
           const coord = collectibles[index];
           // Calculate the new position based on the current scale and origin
-          const transformedX = coord.x * scale + originX;
-          const transformedY = coord.y * scale + originY;
+          const transformedX = coord.x * scale + originX - 5;
+          const transformedY = coord.y * scale + originY - 5;
           marker.style.transform = `translate(${transformedX}px, ${transformedY}px) scale(${1})`;
         });
       }
