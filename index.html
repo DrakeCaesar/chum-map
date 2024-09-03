@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Map with Collectibles</title>
+    <style>
+      body {
+        display: flex;
+        margin: 0;
+        overflow: hidden;
+      }
+      #map-container {
+        position: relative;
+        flex: 1;
+      }
+      #map {
+        /* width: 100%; */
+        height: 100%;
+        object-fit: cover;
+      }
+      .collectible {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: red;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .collected {
+        background-color: gray;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map-container">
+      <img id="map" src="Sable-Chum-Map.png" alt="Game Map" />
+    </div>
+    <script>
+      const collectibles = [];
+
+      fetch("chums.json")
+        .then((response) => response.json())
+        .then((data) => {
+          collectibles.push(...data);
+          loadCollectibles();
+        });
+
+      const mapContainer = document.getElementById("map-container");
+
+      function loadCollectibles() {
+        const collected = JSON.parse(localStorage.getItem("collected") || "[]");
+        collectibles.forEach((coord, index) => {
+          const marker = document.createElement("div");
+          marker.classList.add("collectible");
+          if (collected.includes(index)) {
+            marker.classList.add("collected");
+          }
+          marker.style.left = `${coord.x - 10}px`;
+          marker.style.top = `${coord.y - 10}px`;
+          marker.addEventListener("click", () =>
+            toggleCollectible(index, marker),
+          );
+          mapContainer.appendChild(marker);
+        });
+      }
+
+      function toggleCollectible(index, marker) {
+        let collected = JSON.parse(localStorage.getItem("collected") || "[]");
+        if (collected.includes(index)) {
+          collected = collected.filter((i) => i !== index);
+          marker.classList.remove("collected");
+        } else {
+          collected.push(index);
+          marker.classList.add("collected");
+        }
+        localStorage.setItem("collected", JSON.stringify(collected));
+      }
+    </script>
+  </body>
+</html>
