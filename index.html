@@ -82,10 +82,14 @@
           // Calculate the new position based on the current scale and origin
           const transformedX = coord.x * scale + originX - 5;
           const transformedY = coord.y * scale + originY - 5;
-          marker.style.transform = `translate(${transformedX}px, ${transformedY}px) scale(${1})`;
+
+          // Calculate the scale for the marker, ensuring it doesn't go below 10px
+          const markerScale = Math.max(scale, 10 / marker.offsetWidth);
+
+          // Apply the position and scaling to the marker
+          marker.style.transform = `translate(${transformedX}px, ${transformedY}px) scale(${markerScale})`;
         });
       }
-
       function fitMapToContainer() {
         const containerRect = mapContainer.getBoundingClientRect();
         const naturalWidth = map.naturalWidth;
