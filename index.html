@@ -44,20 +44,16 @@
 
       .collectible {
         position: absolute;
-        width: 32px;
-        height: 32px;
-        background-color: yellow;
-        border: 1px solid black;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        transform-origin: center;
+        fill: currentColor;
+        stroke: currentColor;
+        width: 50px;
+        height: 50px;
         left: 0px;
         top: 0px;
       }
 
-      .collected {
-        background-color: gray;
+      .collected img {
+        filter: brightness(1); /* Grey out the image when collected */
       }
     </style>
   </head>
@@ -89,11 +85,10 @@
         document.querySelectorAll(".collectible").forEach((marker, index) => {
           const coord = collectibles[index];
           // Calculate the new position based on the current scale and origin
-          const transformedX = coord.x * scale + originX - 16;
-          const transformedY = coord.y * scale + originY - 16;
+          const transformedX = (coord.x - 6) * scale + originX - 25;
+          const transformedY = (coord.y + 5) * scale + originY - 25;
 
-          // Calculate the scale for the marker, ensuring it doesn't go below 16px
-          const markerScale = Math.max(scale, 16 / marker.offsetWidth);
+          const markerScale = Math.max(scale, 32 / marker.offsetWidth);
 
           // Apply the position and scaling to the marker
           marker.style.transform = `translate(${transformedX}px, ${transformedY}px) scale(${markerScale})`;
@@ -144,31 +139,41 @@
 
       function loadCollectibles() {
         const collected = JSON.parse(localStorage.getItem("collected") || "[]");
+
         collectibles.forEach((coord, index) => {
-          const marker = document.createElement("div");
-          marker.classList.add("collectible");
+          const featherImg = document.createElement("img");
+          featherImg.classList.add("collectible");
+          featherImg.src = "feather.svg"; // Feather SVG file
+
+          // If the collectible is already collected, add the class
           if (collected.includes(index)) {
-            marker.classList.add("collected");
+            featherImg.classList.add("collected");
           }
-          marker.addEventListener("click", () =>
-            toggleCollectible(index, marker),
+
+          // Add event listener to toggle collectible state
+          featherImg.addEventListener("click", () =>
+            toggleCollectible(index, featherImg),
           );
 
-          mapContainer.appendChild(marker);
+          // Append the image directly to the mapContainer
+          mapContainer.appendChild(featherImg);
         });
 
         updateCounter(); // Update counter on load
       }
 
-      function toggleCollectible(index, marker) {
+      function toggleCollectible(index, featherImg) {
         let collected = JSON.parse(localStorage.getItem("collected") || "[]");
+
         if (collected.includes(index)) {
           collected = collected.filter((i) => i !== index);
-          marker.classList.remove("collected");
+          featherImg.classList.remove("collected");
         } else {
           collected.push(index);
-          marker.classList.add("collected");
+          featherImg.classList.add("collected");
         }
+
+        // Save the updated collected list to localStorage
         localStorage.setItem("collected", JSON.stringify(collected));
 
         updateCounter(); // Update counter when a collectible is toggled
