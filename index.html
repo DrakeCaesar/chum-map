@@ -5,22 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Game Map with Collectibles</title>
     <style>
+      @import url("https://fonts.cdnfonts.com/css/century-schoolbook");
       body {
         margin: 0;
         overflow: hidden;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         height: 100vh;
         background-color: #333;
+        font-family: "Century Schoolbook", serif;
+        color: white;
       }
+
+      #counter {
+        font-size: 24px;
+        margin: 10px;
+      }
+
       #map-container {
         position: relative;
         width: 100vw;
-        height: 100vh;
+        height: calc(100vh - 40px); /* Adjusting for counter height */
         overflow: hidden;
         cursor: grab;
       }
+
       #map {
         display: block;
         transform-origin: top left;
@@ -30,6 +41,7 @@
         -moz-user-select: none;
         -ms-user-select: none;
       }
+
       .collectible {
         position: absolute;
         width: 32px;
@@ -43,12 +55,14 @@
         left: 0px;
         top: 0px;
       }
+
       .collected {
         background-color: gray;
       }
     </style>
   </head>
   <body>
+    <div id="counter">0/0</div>
     <div id="map-container">
       <img id="map" src="Sable-Chum-Map.png" alt="Game Map" draggable="false" />
     </div>
@@ -57,6 +71,7 @@
 
       const mapContainer = document.getElementById("map-container");
       const map = document.getElementById("map");
+      const counter = document.getElementById("counter");
 
       let scale = 1;
       let originX = 0;
@@ -140,6 +155,8 @@
 
           mapContainer.appendChild(marker);
         });
+
+        updateCounter(); // Update counter on load
       }
 
       function toggleCollectible(index, marker) {
@@ -152,6 +169,13 @@
           marker.classList.add("collected");
         }
         localStorage.setItem("collected", JSON.stringify(collected));
+
+        updateCounter(); // Update counter when a collectible is toggled
+      }
+
+      function updateCounter() {
+        const collected = JSON.parse(localStorage.getItem("collected") || "[]");
+        counter.textContent = `${collected.length}/${collectibles.length}`;
       }
 
       // Disable image dragging behavior
