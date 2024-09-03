@@ -27,12 +27,12 @@
         height: auto;
         transform-origin: top left;
         transition: transform 0.1s ease-out;
-        user-drag: none; /* Prevent image dragging in WebKit browsers */
-        user-select: none; /* Prevent text selection */
-        -webkit-user-drag: none; /* Prevent image dragging in Safari */
-        -webkit-user-select: none; /* Prevent text selection in Safari */
-        -moz-user-select: none; /* Prevent text selection in Firefox */
-        -ms-user-select: none; /* Prevent text selection in IE/Edge */
+        user-drag: none;
+        user-select: none;
+        -webkit-user-drag: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
       }
       .collectible {
         position: absolute;
@@ -82,22 +82,29 @@
       mapContainer.addEventListener("wheel", (event) => {
         event.preventDefault();
 
-        const rect = mapContainer.getBoundingClientRect();
-        const { offsetX, offsetY } = event;
+        // Temporarily disable the transition
+        map.style.transition = "none";
 
-        // Calculate the relative mouse position in the zoomed container
-        const mouseX = offsetX / scale;
-        const mouseY = offsetY / scale;
+        const rect = map.getBoundingClientRect();
+        const mouseX = (event.clientX - rect.left) / scale;
+        const mouseY = (event.clientY - rect.top) / scale;
 
-        // Zoom in or out
-        scale *= event.deltaY > 0 ? 0.9 : 1.1;
+        const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+        const newScale = scale * zoomFactor;
 
-        // Adjust origin to zoom towards the mouse position
-        originX -= mouseX * (scale - 1) * (event.deltaY > 0 ? 0.1 : -0.1);
-        originY -= mouseY * (scale - 1) * (event.deltaY > 0 ? 0.1 : -0.1);
+        // Calculate the new origin to keep the mouse position in the same place
+        originX = mouseX * (scale - newScale) + originX;
+        originY = mouseY * (scale - newScale) + originY;
 
-        // Update the map's transform
+        // Apply the new scale
+        scale = newScale;
+
         updateTransform();
+
+        // Re-enable the transition after a short delay
+        setTimeout(() => {
+          map.style.transition = "transform 0.1s ease-out";
+        }, 0);
       });
 
       mapContainer.addEventListener("mousedown", (event) => {
