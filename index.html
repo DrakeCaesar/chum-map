@@ -52,8 +52,8 @@
         top: 0px;
       }
 
-      .collected img {
-        filter: brightness(1); /* Grey out the image when collected */
+      .collected {
+        filter: grayscale(100%) brightness(0.67);
       }
     </style>
   </head>
@@ -144,6 +144,7 @@
           const featherImg = document.createElement("img");
           featherImg.classList.add("collectible");
           featherImg.src = "feather.svg"; // Feather SVG file
+          featherImg.draggable = false;
 
           // If the collectible is already collected, add the class
           if (collected.includes(index)) {
@@ -151,9 +152,9 @@
           }
 
           // Add event listener to toggle collectible state
-          featherImg.addEventListener("click", () =>
-            toggleCollectible(index, featherImg),
-          );
+          featherImg.addEventListener("click", () => {
+            toggleCollectible(index, featherImg);
+          });
 
           // Append the image directly to the mapContainer
           mapContainer.appendChild(featherImg);
