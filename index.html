@@ -55,13 +55,6 @@
     <script>
       const collectibles = [];
 
-      fetch("chums.json")
-        .then((response) => response.json())
-        .then((data) => {
-          collectibles.push(...data);
-          loadCollectibles();
-        });
-
       const mapContainer = document.getElementById("map-container");
       const map = document.getElementById("map");
 
@@ -110,6 +103,8 @@
           originX = savedState.originX;
           originY = savedState.originY;
           updateTransform();
+        } else {
+          fitMapToContainer(); // Fit map initially if no saved state
         }
       }
 
@@ -145,8 +140,6 @@
 
           mapContainer.appendChild(marker);
         });
-
-        loadStateFromLocalStorage(); // Load the saved state (if any) to restore the map position and scale
       }
 
       function toggleCollectible(index, marker) {
@@ -210,7 +203,16 @@
       });
 
       window.addEventListener("resize", fitMapToContainer);
-      window.addEventListener("load", loadCollectibles);
+      window.addEventListener("load", () => {
+        loadStateFromLocalStorage();
+        fetch("chums.json")
+          .then((response) => response.json())
+          .then((data) => {
+            collectibles.push(...data);
+            loadCollectibles();
+            updateTransform();
+          });
+      });
     </script>
   </body>
 </html>
