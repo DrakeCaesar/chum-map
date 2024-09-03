@@ -23,11 +23,7 @@
       }
       #map {
         display: block;
-        width: 100%;
-        height: auto;
         transform-origin: top left;
-        transition: transform 0.1s ease-out;
-        user-drag: none;
         user-select: none;
         -webkit-user-drag: none;
         -webkit-user-select: none;
@@ -42,6 +38,9 @@
         border-radius: 50%;
         cursor: pointer;
         transition: background-color 0.3s;
+        transform-origin: center;
+        left: 0px;
+        top: 0px;
       }
       .collected {
         background-color: gray;
@@ -73,7 +72,65 @@
       let startY = 0;
 
       function updateTransform() {
+        // Update the map transformation
         map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+
+        // Update the position and scale of each collectible
+        document.querySelectorAll(".collectible").forEach((marker, index) => {
+          const coord = collectibles[index];
+          // Calculate the new position based on the current scale and origin
+          const transformedX = coord.x * scale + originX;
+          const transformedY = coord.y * scale + originY;
+          marker.style.transform = `translate(${transformedX}px, ${transformedY}px) scale(${1})`;
+        });
+      }
+
+      function fitMapToContainer() {
+        const containerRect = mapContainer.getBoundingClientRect();
+        const naturalWidth = map.naturalWidth;
+        const naturalHeight = map.naturalHeight;
+
+        const scaleX = containerRect.width / naturalWidth;
+        const scaleY = containerRect.height / naturalHeight;
+
+        // Choose the smaller scale to fit the map within the container
+        scale = Math.min(scaleX, scaleY);
+
+        // Center the map
+        originX = (containerRect.width - naturalWidth * scale) / 2;
+        originY = (containerRect.height - naturalHeight * scale) / 2;
+
+        updateTransform();
+      }
+
+      function loadCollectibles() {
+        const collected = JSON.parse(localStorage.getItem("collected") || "[]");
+        collectibles.forEach((coord, index) => {
+          const marker = document.createElement("div");
+          marker.classList.add("collectible");
+          if (collected.includes(index)) {
+            marker.classList.add("collected");
+          }
+          marker.addEventListener("click", () =>
+            toggleCollectible(index, marker),
+          );
+
+          mapContainer.appendChild(marker);
+        });
+
+        fitMapToContainer(); // Ensure collectibles are correctly positioned initially
+      }
+
+      function toggleCollectible(index, marker) {
+        let collected = JSON.parse(localStorage.getItem("collected") || "[]");
+        if (collected.includes(index)) {
+          collected = collected.filter((i) => i !== index);
+          marker.classList.remove("collected");
+        } else {
+          collected.push(index);
+          marker.classList.add("collected");
+        }
+        localStorage.setItem("collected", JSON.stringify(collected));
       }
 
       // Disable image dragging behavior
@@ -81,9 +138,6 @@
 
       mapContainer.addEventListener("wheel", (event) => {
         event.preventDefault();
-
-        // Temporarily disable the transition
-        map.style.transition = "none";
 
         const rect = map.getBoundingClientRect();
         const mouseX = (event.clientX - rect.left) / scale;
@@ -100,11 +154,6 @@
         scale = newScale;
 
         updateTransform();
-
-        // Re-enable the transition after a short delay
-        setTimeout(() => {
-          map.style.transition = "transform 0.1s ease-out";
-        }, 0);
       });
 
       mapContainer.addEventListener("mousedown", (event) => {
@@ -132,34 +181,8 @@
         mapContainer.style.cursor = "grab";
       });
 
-      function loadCollectibles() {
-        const collected = JSON.parse(localStorage.getItem("collected") || "[]");
-        collectibles.forEach((coord, index) => {
-          const marker = document.createElement("div");
-          marker.classList.add("collectible");
-          if (collected.includes(index)) {
-            marker.classList.add("collected");
-          }
-          marker.style.left = `${coord.x}px`;
-          marker.style.top = `${coord.y}px`;
-          marker.addEventListener("click", () =>
-            toggleCollectible(index, marker),
-          );
-          mapContainer.appendChild(marker);
-        });
-      }
-
-      function toggleCollectible(index, marker) {
-        let collected = JSON.parse(localStorage.getItem("collected") || "[]");
-        if (collected.includes(index)) {
-          collected = collected.filter((i) => i !== index);
-          marker.classList.remove("collected");
-        } else {
-          collected.push(index);
-          marker.classList.add("collected");
-        }
-        localStorage.setItem("collected", JSON.stringify(collected));
-      }
+      window.addEventListener("resize", fitMapToContainer);
+      window.addEventListener("load", fitMapToContainer);
     </script>
   </body>
 </html>
