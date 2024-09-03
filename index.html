@@ -6,18 +6,33 @@
     <title>Game Map with Collectibles</title>
     <style>
       body {
-        display: flex;
         margin: 0;
         overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background-color: #333;
       }
       #map-container {
         position: relative;
-        flex: 1;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        cursor: grab;
       }
       #map {
-        /* width: 100%; */
-        height: 100%;
-        object-fit: cover;
+        display: block;
+        width: 100%;
+        height: auto;
+        transform-origin: top left;
+        transition: transform 0.1s ease-out;
+        user-drag: none; /* Prevent image dragging in WebKit browsers */
+        user-select: none; /* Prevent text selection */
+        -webkit-user-drag: none; /* Prevent image dragging in Safari */
+        -webkit-user-select: none; /* Prevent text selection in Safari */
+        -moz-user-select: none; /* Prevent text selection in Firefox */
+        -ms-user-select: none; /* Prevent text selection in IE/Edge */
       }
       .collectible {
         position: absolute;
@@ -35,7 +50,7 @@
   </head>
   <body>
     <div id="map-container">
-      <img id="map" src="Sable-Chum-Map.png" alt="Game Map" />
+      <img id="map" src="Sable-Chum-Map.png" alt="Game Map" draggable="false" />
     </div>
     <script>
       const collectibles = [];
@@ -48,6 +63,67 @@
         });
 
       const mapContainer = document.getElementById("map-container");
+      const map = document.getElementById("map");
+
+      let scale = 1;
+      let originX = 0;
+      let originY = 0;
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+
+      function updateTransform() {
+        map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+      }
+
+      // Disable image dragging behavior
+      map.addEventListener("dragstart", (event) => event.preventDefault());
+
+      mapContainer.addEventListener("wheel", (event) => {
+        event.preventDefault();
+
+        const rect = mapContainer.getBoundingClientRect();
+        const { offsetX, offsetY } = event;
+
+        // Calculate the relative mouse position in the zoomed container
+        const mouseX = offsetX / scale;
+        const mouseY = offsetY / scale;
+
+        // Zoom in or out
+        scale *= event.deltaY > 0 ? 0.9 : 1.1;
+
+        // Adjust origin to zoom towards the mouse position
+        originX -= mouseX * (scale - 1) * (event.deltaY > 0 ? 0.1 : -0.1);
+        originY -= mouseY * (scale - 1) * (event.deltaY > 0 ? 0.1 : -0.1);
+
+        // Update the map's transform
+        updateTransform();
+      });
+
+      mapContainer.addEventListener("mousedown", (event) => {
+        isDragging = true;
+        startX = event.clientX - originX;
+        startY = event.clientY - originY;
+        mapContainer.style.cursor = "grabbing";
+      });
+
+      mapContainer.addEventListener("mousemove", (event) => {
+        if (isDragging) {
+          originX = event.clientX - startX;
+          originY = event.clientY - startY;
+          updateTransform();
+        }
+      });
+
+      mapContainer.addEventListener("mouseup", () => {
+        isDragging = false;
+        mapContainer.style.cursor = "grab";
+      });
+
+      mapContainer.addEventListener("mouseleave", () => {
+        isDragging = false;
+        mapContainer.style.cursor = "grab";
+      });
 
       function loadCollectibles() {
         const collected = JSON.parse(localStorage.getItem("collected") || "[]");
@@ -57,8 +133,8 @@
           if (collected.includes(index)) {
             marker.classList.add("collected");
           }
-          marker.style.left = `${coord.x - 10}px`;
-          marker.style.top = `${coord.y - 10}px`;
+          marker.style.left = `${coord.x}px`;
+          marker.style.top = `${coord.y}px`;
           marker.addEventListener("click", () =>
             toggleCollectible(index, marker),
           );
