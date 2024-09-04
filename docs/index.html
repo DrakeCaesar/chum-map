@@ -253,7 +253,7 @@
           }
 
           featherImg.addEventListener("click", () => {
-            toggleCollectible(index, featherImg);
+            toggleCollectible(index, featherImg); // Ensure the marker toggles the checkbox
           });
 
           mapContainer.appendChild(featherImg);
@@ -261,21 +261,56 @@
 
         updateCounter();
       }
+      function updateRegionCounter(regionIndex, regionHeader, collected) {
+        const regionCollectibles = collectibles.filter(
+          (chum) => chum.regionIndex === regionIndex,
+        );
+        const collectedInRegion = regionCollectibles.filter((chum) =>
+          collected.includes(chum.index),
+        );
 
-      function toggleCollectible(index, featherImg) {
+        // Extract the region name (before the first number in the header text)
+        const headerText = regionHeader.textContent;
+        const regionName = headerText.replace(/\d+\/\d+$/, "").trim();
+
+        // Update the header with the region name and the new collectible count
+        regionHeader.textContent = `${regionName} ${collectedInRegion.length}/${regionCollectibles.length}`;
+      }
+
+      function toggleCollectible(index, featherImg, toggleCheckbox = true) {
         if (!wasDragging) {
           let collected = JSON.parse(localStorage.getItem("collected") || "[]");
 
+          const checkbox = document.querySelector(
+            `#chum-${index} input[type="checkbox"]`,
+          );
+          const regionHeader =
+            document.querySelectorAll(".region-header")[
+              collectibles[index].regionIndex
+            ];
+
+          // Toggle the collected status
           if (collected.includes(index)) {
             collected = collected.filter((i) => i !== index);
             featherImg.classList.remove("collected");
+
+            if (toggleCheckbox) checkbox.checked = false; // Uncheck the checkbox
           } else {
             collected.push(index);
             featherImg.classList.add("collected");
+
+            if (toggleCheckbox) checkbox.checked = true; // Check the checkbox
           }
 
+          // Save the updated collected state
           localStorage.setItem("collected", JSON.stringify(collected));
 
+          // Update region and total counters
+          updateRegionCounter(
+            collectibles[index].regionIndex,
+            regionHeader,
+            collected,
+          );
           updateCounter();
         }
       }
@@ -288,14 +323,19 @@
       function populateSidePanel() {
         const regions = {};
 
+        // Group collectibles by region
         collectibles.forEach((chum, index) => {
           if (!regions[chum.region]) {
             regions[chum.region] = [];
           }
+          chum.index = index; // Add index to the collectible for reference
           regions[chum.region].push(index);
         });
 
-        for (const region in regions) {
+        // Sort regions alphabetically
+        const sortedRegionNames = Object.keys(regions).sort();
+
+        sortedRegionNames.forEach((region, regionIndex) => {
           const regionDiv = document.createElement("div");
           regionDiv.classList.add("region");
 
@@ -315,6 +355,7 @@
           regions[region].forEach((index) => {
             const chumItem = document.createElement("div");
             chumItem.classList.add("chum-item");
+            chumItem.id = `chum-${index}`;
 
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
@@ -325,6 +366,7 @@
               toggleCollectible(
                 index,
                 document.querySelectorAll(".collectible")[index],
+                false,
               );
             });
 
@@ -347,7 +389,19 @@
           regionDiv.appendChild(regionHeader);
           regionDiv.appendChild(regionContent);
           sidePanel.appendChild(regionDiv);
-        }
+
+          // Update regionIndex to track the sorted order for updating later
+          regions[region].forEach((index) => {
+            collectibles[index].regionIndex = regionIndex;
+          });
+
+          // Update the region counter initially
+          updateRegionCounter(
+            regionIndex,
+            regionHeader,
+            JSON.parse(localStorage.getItem("collected") || "[]"),
+          );
+        });
       }
 
       map.addEventListener("dragstart", (event) => event.preventDefault());
