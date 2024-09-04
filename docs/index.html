@@ -19,26 +19,25 @@
         color: white;
       }
 
-      #side-panel {
-        width: 300px;
-        background-color: #444;
-        overflow-y: auto;
+      #counter-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
         padding: 10px;
-        margin-bottom: 10px;
-        position: absolute;
-        left: 0px;
-        top: 0px;
-        height: 100%;
-        box-shadow: 5px 0px 10px rgba(0, 0, 0, 0.5);
+        position: relative;
       }
 
       #reset-btn {
         font-size: 18px;
         font-family: inherit;
-        padding: 5px;
+        padding: 5px 10px;
+        margin: 10px;
         background-color: #555;
-        border: 1px solid #666;
-        color: inherit;
+        color: white;
+        border: none;
+        cursor: pointer;
+        position: absolute;
       }
 
       #reset-btn:hover {
@@ -47,48 +46,9 @@
 
       #counter {
         font-size: 24px;
+        margin: 0 auto; /* Center the counter */
         text-align: center;
-      }
-
-      .region {
-        margin-bottom: inherit;
-      }
-
-      .region-header {
-        cursor: pointer;
-        padding: 5px;
-        background-color: #555;
-        border: 1px solid #666;
-      }
-
-      .region-content {
-        display: none;
-        padding: 5px;
-        background-color: #666;
-        border: 1px solid #777;
-      }
-
-      .chum-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 5px;
-      }
-
-      .chum-item input {
-        margin-right: 10px;
-      }
-
-      .highlight {
-        animation: highlight 1s infinite alternate;
-      }
-
-      @keyframes highlight {
-        from {
-          filter: brightness(1);
-        }
-        to {
-          filter: brightness(2);
-        }
+        flex-grow: 1;
       }
 
       #map-container {
@@ -135,6 +95,10 @@
     </style>
   </head>
   <body>
+    <div id="counter-container">
+      <button id="reset-btn">Reset View</button>
+      <div id="counter">0/165</div>
+    </div>
     <div id="map-container">
       <img
         id="map"
@@ -144,11 +108,6 @@
         loading="lazy"
       />
     </div>
-    <div id="side-panel">
-      <button id="reset-btn">Reset View</button>
-
-      <div id="counter">0/165</div>
-    </div>
     <script>
       const collectibles = [];
 
@@ -156,7 +115,6 @@
       const map = document.getElementById("map");
       const counter = document.getElementById("counter");
       const reset = document.getElementById("reset-btn");
-      const sidePanel = document.getElementById("side-panel");
 
       let scale = 1;
       let originX = 0;
@@ -263,71 +221,6 @@
         counter.textContent = `${collected.length}/${collectibles.length}`;
       }
 
-      function populateSidePanel() {
-        const regions = {};
-
-        collectibles.forEach((chum, index) => {
-          if (!regions[chum.region]) {
-            regions[chum.region] = [];
-          }
-          regions[chum.region].push(index);
-        });
-
-        for (const region in regions) {
-          const regionDiv = document.createElement("div");
-          regionDiv.classList.add("region");
-
-          const regionHeader = document.createElement("div");
-          regionHeader.classList.add("region-header");
-          regionHeader.textContent = `${region} 0/${regions[region].length}`;
-          regionHeader.addEventListener("click", () => {
-            const content = regionDiv.querySelector(".region-content");
-            content.style.display =
-              content.style.display === "none" ? "block" : "none";
-          });
-
-          const regionContent = document.createElement("div");
-          regionContent.classList.add("region-content");
-          regionContent.style.display = "none";
-
-          regions[region].forEach((index) => {
-            const chumItem = document.createElement("div");
-            chumItem.classList.add("chum-item");
-
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.checked = JSON.parse(
-              localStorage.getItem("collected") || "[]",
-            ).includes(index);
-            checkbox.addEventListener("change", () => {
-              toggleCollectible(
-                index,
-                document.querySelectorAll(".collectible")[index],
-              );
-            });
-
-            const chumLabel = document.createElement("label");
-            chumLabel.textContent = `Chum ${index + 1}`;
-            chumLabel.addEventListener("click", () => {
-              document
-                .querySelectorAll(".collectible")
-                .forEach((marker) => marker.classList.remove("highlight"));
-              document
-                .querySelectorAll(".collectible")
-                [index].classList.add("highlight");
-            });
-
-            chumItem.appendChild(checkbox);
-            chumItem.appendChild(chumLabel);
-            regionContent.appendChild(chumItem);
-          });
-
-          regionDiv.appendChild(regionHeader);
-          regionDiv.appendChild(regionContent);
-          sidePanel.appendChild(regionDiv);
-        }
-      }
-
       map.addEventListener("dragstart", (event) => event.preventDefault());
 
       mapContainer.addEventListener("wheel", (event) => {
@@ -385,7 +278,6 @@
         updateTransform();
       });
 
-      // window.addEventListener("resize", fitMapToContainer);
       window.addEventListener("load", () => {
         loadStateFromLocalStorage();
         fetch("chums.json")
@@ -393,7 +285,6 @@
           .then((data) => {
             collectibles.push(...data);
             loadCollectibles();
-            populateSidePanel();
             updateTransform();
           });
       });
