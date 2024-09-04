@@ -13,31 +13,58 @@
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        height: 100vh;
         background-color: #333;
         font-family: "Century Schoolbook", serif;
         color: white;
       }
 
-      #counter-container {
-        display: flex;
+      body {
+        margin: 0;
+        overflow: hidden;
+        display: flex; /* Add display flex to body */
+        flex-direction: column;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-start;
+        background-color: #333;
+        font-family: "Century Schoolbook", serif;
+        color: white;
+        height: 100vh; /* Ensure body takes full height */
+      }
+
+      #container {
+        display: flex;
+        flex-direction: row; /* Ensure the side panel and map are side by side */
+        height: 100%;
         width: 100%;
-        padding: 10px;
-        position: relative;
+      }
+
+      #side-panel {
+        flex: 0 0 25%; /* Maintain side panel width */
+        background-color: #444;
+        overflow-y: auto;
+        height: 100%; /* Ensure it takes full height of its container */
+        position: relative; /* Change to relative for better alignment */
+        /* margin-bottom: 10px; */ /* Removed margin to prevent unwanted spacing */
+        padding: 10px; /* Add padding for better spacing */
+        margin-bottom: 10px; /* Add margin to separate from the map */
+        z-index: 2;
+        scrollbar-width: none;
+      }
+
+      #map-container {
+        flex: 1; /* Allow it to take the remaining space */
+        overflow: hidden;
+        cursor: grab;
+        height: 100%; /* Ensure it takes full height of its container */
       }
 
       #reset-btn {
         font-size: 18px;
         font-family: inherit;
-        padding: 5px 10px;
-        margin: 10px;
+        padding: 5px;
         background-color: #555;
-        color: white;
-        border: none;
-        cursor: pointer;
-        position: absolute;
+        border: 1px solid #666;
+        color: inherit;
       }
 
       #reset-btn:hover {
@@ -46,17 +73,85 @@
 
       #counter {
         font-size: 24px;
-        margin: 0 auto; /* Center the counter */
         text-align: center;
-        flex-grow: 1;
+        margin: inherit;
+        padding: inherit;
       }
 
-      #map-container {
-        position: relative;
-        width: 100vw;
-        height: calc(100vh - 40px); /* Adjusting for counter height */
-        overflow: hidden;
-        cursor: grab;
+      .region {
+        margin-bottom: inherit;
+      }
+
+      .region-header {
+        cursor: pointer;
+        padding: 5px;
+        background-color: #555;
+        border: 1px solid #666;
+      }
+
+      .region-content {
+        display: none;
+        padding: 5px;
+        background-color: #666;
+        border: 1px solid #777;
+      }
+
+      .chum-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+
+      .chum-item:hover {
+        text-decoration: underline;
+      }
+
+      label,
+      chum-item {
+        cursor: pointer;
+      }
+
+      /* underline too */
+      .chum-item label.selected {
+        text-decoration: underline;
+      }
+
+      .chum-item input {
+        margin-right: 10px;
+      }
+
+      .collectible.selected,
+      .collectible.selected-temp {
+        animation: highlightWhite 1s infinite alternate;
+        z-index: 1;
+      }
+
+      .collectible.collected.selected,
+      .collectible.collected.selected-temp {
+        animation: highlightGrey 1s infinite alternate;
+        z-index: 1;
+      }
+
+      @keyframes highlightWhite {
+        from {
+          filter: none;
+        }
+        to {
+          filter: drop-shadow(0px 0px 5px #bbb) drop-shadow(0px 0px 10px #ccc)
+            drop-shadow(0px 0px 15px #ddd) drop-shadow(0px 0px 20px #eee)
+            drop-shadow(0px 0px 25px #fff);
+        }
+      }
+
+      @keyframes highlightGrey {
+        from {
+          filter: grayscale(100%) brightness(0.67);
+        }
+        to {
+          filter: grayscale(100%) brightness(0.67) drop-shadow(0px 0px 5px #bbb)
+            drop-shadow(0px 0px 10px #ccc) drop-shadow(0px 0px 15px #ddd)
+            drop-shadow(0px 0px 20px #eee) drop-shadow(0px 0px 25px #fff);
+        }
       }
 
       #map {
@@ -86,6 +181,7 @@
       .collectible:hover {
         cursor: pointer;
         filter: drop-shadow(0 0 5px #cccc33) drop-shadow(0 0 10px #cccc33);
+        z-index: 1;
       }
 
       .collected:hover {
@@ -95,18 +191,20 @@
     </style>
   </head>
   <body>
-    <div id="counter-container">
-      <button id="reset-btn">Reset View</button>
-      <div id="counter">0/165</div>
-    </div>
-    <div id="map-container">
-      <img
-        id="map"
-        src="Sable-Chum-Map-90.webp"
-        alt="Game Map"
-        draggable="false"
-        loading="lazy"
-      />
+    <div id="container">
+      <div id="side-panel">
+        <button id="reset-btn">Reset View</button>
+        <div id="counter">0/165</div>
+      </div>
+      <div id="map-container">
+        <img
+          id="map"
+          src="Sable-Chum-Map-90.webp"
+          alt="Game Map"
+          draggable="false"
+          loading="lazy"
+        />
+      </div>
     </div>
     <script>
       const collectibles = [];
@@ -115,6 +213,7 @@
       const map = document.getElementById("map");
       const counter = document.getElementById("counter");
       const reset = document.getElementById("reset-btn");
+      const sidePanel = document.getElementById("side-panel");
 
       let scale = 1;
       let originX = 0;
@@ -126,11 +225,12 @@
 
       function updateTransform() {
         map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+        const offset = mapContainer.getBoundingClientRect().left;
 
         document.querySelectorAll(".collectible").forEach((marker, index) => {
           const coord = collectibles[index];
 
-          const transformedX = (coord.x - 6) * scale + originX - 25;
+          const transformedX = offset + (coord.x - 6) * scale + originX - 25;
           const transformedY = (coord.y + 5) * scale + originY - 16;
 
           const markerScale = Math.max(scale, 32 / marker.offsetWidth);
@@ -159,6 +259,11 @@
         } else {
           fitMapToContainer();
         }
+
+        // Load the regionStates (open/closed state) if available
+        const regionStates = JSON.parse(
+          localStorage.getItem("regionStates") || "{}",
+        );
       }
 
       function fitMapToContainer() {
@@ -189,29 +294,85 @@
           }
 
           featherImg.addEventListener("click", () => {
-            toggleCollectible(index, featherImg);
+            toggleCollectible(index, featherImg); // Ensure the marker toggles the checkbox
           });
 
           mapContainer.appendChild(featherImg);
         });
 
         updateCounter();
+
+        const selectedIndex = JSON.parse(
+          localStorage.getItem("selected") || "-1",
+        );
+
+        if (selectedIndex >= 0) {
+          document
+            .querySelectorAll(".collectible")
+            .forEach((marker) => marker.classList.remove("selected"));
+
+          document
+            .querySelectorAll(".collectible")
+            [selectedIndex].classList.add("selected");
+        }
+      }
+      function updateRegionCounter(regionIndex, regionHeader, collected) {
+        const regionCollectibles = collectibles.filter(
+          (chum) => chum.regionIndex === regionIndex,
+        );
+        const collectedInRegion = regionCollectibles.filter((chum) =>
+          collected.includes(chum.index),
+        );
+
+        // Extract the region name (before the first number in the header text)
+        const headerText = regionHeader.textContent;
+        const regionName = headerText.replace(/\d+\/\d+$/, "").trim();
+
+        // Update the header with the region name and the new collectible count
+        regionHeader.textContent = `${regionName} ${collectedInRegion.length}/${regionCollectibles.length}`;
       }
 
-      function toggleCollectible(index, featherImg) {
+      function toggleCollectible(index, featherImg, toggleCheckbox = true) {
         if (!wasDragging) {
+          if (featherImg.classList.contains("selected")) {
+            document
+              .querySelectorAll(".chum-item label")
+              .forEach((label) => label.classList.remove("selected"));
+            featherImg.classList.remove("selected");
+          }
+
           let collected = JSON.parse(localStorage.getItem("collected") || "[]");
 
+          const checkbox = document.querySelector(
+            `#chum-${index} input[type="checkbox"]`,
+          );
+          const regionHeader =
+            document.querySelectorAll(".region-header")[
+              collectibles[index].regionIndex
+            ];
+
+          // Toggle the collected status
           if (collected.includes(index)) {
             collected = collected.filter((i) => i !== index);
             featherImg.classList.remove("collected");
+
+            if (toggleCheckbox) checkbox.checked = false; // Uncheck the checkbox
           } else {
             collected.push(index);
             featherImg.classList.add("collected");
+
+            if (toggleCheckbox) checkbox.checked = true; // Check the checkbox
           }
 
+          // Save the updated collected state
           localStorage.setItem("collected", JSON.stringify(collected));
 
+          // Update region and total counters
+          updateRegionCounter(
+            collectibles[index].regionIndex,
+            regionHeader,
+            collected,
+          );
           updateCounter();
         }
       }
@@ -219,6 +380,135 @@
       function updateCounter() {
         const collected = JSON.parse(localStorage.getItem("collected") || "[]");
         counter.textContent = `${collected.length}/${collectibles.length}`;
+      }
+
+      function populateSidePanel() {
+        const regions = {};
+
+        // Get the saved region state from localStorage (open/closed state)
+        const regionStates = JSON.parse(
+          localStorage.getItem("regionStates") || "{}",
+        );
+
+        // Group collectibles by region
+        collectibles.forEach((chum, index) => {
+          if (!regions[chum.region]) {
+            regions[chum.region] = [];
+          }
+          chum.index = index; // Add index to the collectible for reference
+          regions[chum.region].push(index);
+        });
+
+        // Sort regions alphabetically
+        const sortedRegionNames = Object.keys(regions).sort();
+
+        let chumIndex = 0;
+
+        sortedRegionNames.forEach((region, regionIndex) => {
+          const regionDiv = document.createElement("div");
+          regionDiv.classList.add("region");
+
+          const regionHeader = document.createElement("div");
+          regionHeader.classList.add("region-header");
+          regionHeader.textContent = `${region} 0/${regions[region].length}`;
+
+          // Add a click event to toggle the visibility of region content
+          regionHeader.addEventListener("click", () => {
+            const content = regionDiv.querySelector(".region-content");
+            const isCurrentlyVisible = content.style.display !== "none";
+            content.style.display = isCurrentlyVisible ? "none" : "block";
+
+            // Update the regionStates object and save it to localStorage
+            regionStates[region] = !isCurrentlyVisible;
+            localStorage.setItem("regionStates", JSON.stringify(regionStates));
+          });
+
+          const regionContent = document.createElement("div");
+          regionContent.classList.add("region-content");
+
+          // Check the saved state for this region to set initial visibility
+          if (regionStates[region]) {
+            regionContent.style.display = "block";
+          } else {
+            regionContent.style.display = "none";
+          }
+
+          regions[region].forEach((index) => {
+            const chumItem = document.createElement("div");
+            chumItem.classList.add("chum-item");
+            chumItem.id = `chum-${index}`;
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = JSON.parse(
+              localStorage.getItem("collected") || "[]",
+            ).includes(index);
+            checkbox.addEventListener("change", () => {
+              toggleCollectible(
+                index,
+                document.querySelectorAll(".collectible")[index],
+                false,
+              );
+            });
+
+            const chumLabel = document.createElement("label");
+            chumLabel.textContent = `Chum ${++chumIndex}`;
+            chumLabel.addEventListener("click", () => {
+              const marker = document.querySelectorAll(".collectible")[index];
+              if (marker.classList.contains("selected")) {
+                marker.classList.remove("selected");
+                localStorage.setItem("selected", -1);
+                chumLabel.classList.remove("selected");
+              } else {
+                document
+                  .querySelectorAll(".collectible")
+                  .forEach((marker) => marker.classList.remove("selected"));
+                document
+                  .querySelectorAll(".chum-item label")
+                  .forEach((label) => label.classList.remove("selected"));
+                document
+                  .querySelectorAll(".collectible")
+                  [index].classList.add("selected");
+                localStorage.setItem("selected", index);
+                chumLabel.classList.add("selected");
+              }
+            });
+
+            chumItem.appendChild(checkbox);
+            chumItem.appendChild(chumLabel);
+            regionContent.appendChild(chumItem);
+          });
+
+          regionDiv.appendChild(regionHeader);
+          regionDiv.appendChild(regionContent);
+          sidePanel.appendChild(regionDiv);
+
+          // Update regionIndex to track the sorted order for updating later
+          regions[region].forEach((index) => {
+            collectibles[index].regionIndex = regionIndex;
+          });
+
+          // Update the region counter initially
+          updateRegionCounter(
+            regionIndex,
+            regionHeader,
+            JSON.parse(localStorage.getItem("collected") || "[]"),
+          );
+        });
+
+        const selectedIndex = JSON.parse(
+          localStorage.getItem("selected") || "-1",
+        );
+
+        if (selectedIndex >= 0) {
+          document
+            .querySelectorAll(".chum-item label")
+            .forEach((label) => label.classList.remove("selected"));
+          document
+            .getElementById(`chum-${selectedIndex}`)
+            .querySelector("label")
+            .classList.add("selected");
+        }
       }
 
       map.addEventListener("dragstart", (event) => event.preventDefault());
@@ -285,6 +575,7 @@
           .then((data) => {
             collectibles.push(...data);
             loadCollectibles();
+            populateSidePanel();
             updateTransform();
           });
       });
