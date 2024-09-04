@@ -76,6 +76,7 @@
       let isDragging = false;
       let startX = 0;
       let startY = 0;
+      let wasDragging = false;
 
       function updateTransform() {
         // Update the map transformation
@@ -164,20 +165,23 @@
       }
 
       function toggleCollectible(index, featherImg) {
-        let collected = JSON.parse(localStorage.getItem("collected") || "[]");
+        // Only proceed if dragging did not occur
+        if (!wasDragging) {
+          let collected = JSON.parse(localStorage.getItem("collected") || "[]");
 
-        if (collected.includes(index)) {
-          collected = collected.filter((i) => i !== index);
-          featherImg.classList.remove("collected");
-        } else {
-          collected.push(index);
-          featherImg.classList.add("collected");
+          if (collected.includes(index)) {
+            collected = collected.filter((i) => i !== index);
+            featherImg.classList.remove("collected");
+          } else {
+            collected.push(index);
+            featherImg.classList.add("collected");
+          }
+
+          // Save the updated collected list to localStorage
+          localStorage.setItem("collected", JSON.stringify(collected));
+
+          updateCounter(); // Update counter when a collectible is toggled
         }
-
-        // Save the updated collected list to localStorage
-        localStorage.setItem("collected", JSON.stringify(collected));
-
-        updateCounter(); // Update counter when a collectible is toggled
       }
 
       function updateCounter() {
@@ -210,6 +214,7 @@
 
       mapContainer.addEventListener("mousedown", (event) => {
         isDragging = true;
+        wasDragging = false; // Reset flag on mousedown
         startX = event.clientX - originX;
         startY = event.clientY - originY;
         mapContainer.style.cursor = "grabbing";
@@ -220,6 +225,7 @@
           originX = event.clientX - startX;
           originY = event.clientY - startY;
           updateTransform();
+          wasDragging = true; // Set flag to true when movement occurs
         }
       });
 
