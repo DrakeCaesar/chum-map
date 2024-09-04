@@ -99,6 +99,9 @@
         display: flex;
         align-items: center;
         margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
 
       .chum-item:hover {
@@ -114,14 +117,12 @@
         margin-right: 10px;
       }
 
-      .collectible.selected,
-      .collectible.selected-temp {
+      .collectible.selected {
         animation: highlightWhite 1s infinite alternate;
         z-index: 1;
       }
 
-      .collectible.collected.selected,
-      .collectible.collected.selected-temp {
+      .collectible.collected.selected {
         animation: highlightGrey 1s infinite alternate;
         z-index: 1;
       }
@@ -414,7 +415,6 @@
           regionHeader.classList.add("region-header");
           regionHeader.textContent = `${region} 0/${regions[region].length}`;
 
-          // Add a click event to toggle the visibility of region content
           regionHeader.addEventListener("click", () => {
             const content = regionDiv.querySelector(".region-content");
             const isCurrentlyVisible = content.style.display !== "none";
@@ -478,9 +478,27 @@
                 chumLabel.classList.add("selected");
               }
             });
+            chumItem.addEventListener("mouseover", () => {
+              document
+                .querySelectorAll(".collectible")
+                .forEach((marker) => marker.classList.remove("selected-temp"));
+
+              // Assuming 'index' is defined somewhere in your code.
+              const marker = document.querySelectorAll(".collectible")[index];
+              if (marker) {
+                marker.classList.add("selected-temp");
+              }
+            });
+
+            chumItem.addEventListener("mouseout", () => {
+              // Optionally, remove the 'selected-temp' class when the mouse leaves
+              document
+                .querySelectorAll(".collectible")
+                .forEach((marker) => marker.classList.remove("selected-temp"));
+            });
+            chumItem.appendChild(chumLabel);
 
             chumItem.appendChild(checkbox);
-            chumItem.appendChild(chumLabel);
             regionContent.appendChild(chumItem);
           });
 
