@@ -102,21 +102,48 @@
         margin-bottom: 5px;
       }
 
+      .chum-item:hover {
+        text-decoration: underline;
+      }
+
+      label,
+      chum-item {
+        cursor: pointer;
+      }
+
+      /* underline too */
+      .chum-item label.selected {
+        text-decoration: underline;
+      }
+
       .chum-item input {
         margin-right: 10px;
       }
 
-      .collectible.selected {
-        animation: highlightWhite 1s infinite alternate;
-        z-index: 1;
-      }
-
+      .collectible.selected,
       .collectible.selected-temp {
         animation: highlightWhite 1s infinite alternate;
         z-index: 1;
       }
 
+      .collectible.collected.selected,
+      .collectible.collected.selected-temp {
+        animation: highlightGrey 1s infinite alternate;
+        z-index: 1;
+      }
+
       @keyframes highlightWhite {
+        from {
+          filter: none;
+        }
+        to {
+          filter: drop-shadow(0px 0px 5px #bbb) drop-shadow(0px 0px 10px #ccc)
+            drop-shadow(0px 0px 15px #ddd) drop-shadow(0px 0px 20px #eee)
+            drop-shadow(0px 0px 25px #fff);
+        }
+      }
+
+      @keyframes highlightGrey {
         from {
           filter: grayscale(100%) brightness(0.67);
         }
@@ -154,6 +181,7 @@
       .collectible:hover {
         cursor: pointer;
         filter: drop-shadow(0 0 5px #cccc33) drop-shadow(0 0 10px #cccc33);
+        z-index: 1;
       }
 
       .collected:hover {
@@ -282,6 +310,7 @@
           document
             .querySelectorAll(".collectible")
             .forEach((marker) => marker.classList.remove("selected"));
+
           document
             .querySelectorAll(".collectible")
             [selectedIndex].classList.add("selected");
@@ -305,6 +334,13 @@
 
       function toggleCollectible(index, featherImg, toggleCheckbox = true) {
         if (!wasDragging) {
+          if (featherImg.classList.contains("selected")) {
+            document
+              .querySelectorAll(".chum-item label")
+              .forEach((label) => label.classList.remove("selected"));
+            featherImg.classList.remove("selected");
+          }
+
           let collected = JSON.parse(localStorage.getItem("collected") || "[]");
 
           const checkbox = document.querySelector(
@@ -418,13 +454,24 @@
             const chumLabel = document.createElement("label");
             chumLabel.textContent = `Chum ${++chumIndex}`;
             chumLabel.addEventListener("click", () => {
-              document
-                .querySelectorAll(".collectible")
-                .forEach((marker) => marker.classList.remove("selected"));
-              document
-                .querySelectorAll(".collectible")
-                [index].classList.add("selected");
-              localStorage.setItem("selected", index);
+              const marker = document.querySelectorAll(".collectible")[index];
+              if (marker.classList.contains("selected")) {
+                marker.classList.remove("selected");
+                localStorage.setItem("selected", -1);
+                chumLabel.classList.remove("selected");
+              } else {
+                document
+                  .querySelectorAll(".collectible")
+                  .forEach((marker) => marker.classList.remove("selected"));
+                document
+                  .querySelectorAll(".chum-item label")
+                  .forEach((label) => label.classList.remove("selected"));
+                document
+                  .querySelectorAll(".collectible")
+                  [index].classList.add("selected");
+                localStorage.setItem("selected", index);
+                chumLabel.classList.add("selected");
+              }
             });
 
             chumItem.appendChild(checkbox);
@@ -448,6 +495,17 @@
             JSON.parse(localStorage.getItem("collected") || "[]"),
           );
         });
+
+        const selectedIndex = JSON.parse(
+          localStorage.getItem("selected") || "-1",
+        );
+        document
+          .querySelectorAll(".chum-item label")
+          .forEach((label) => label.classList.remove("selected"));
+        document
+          .getElementById(`chum-${selectedIndex}`)
+          .querySelector("label")
+          .classList.add("selected");
       }
 
       map.addEventListener("dragstart", (event) => event.preventDefault());
