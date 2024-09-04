@@ -47,7 +47,7 @@
         /* margin-bottom: 10px; */ /* Removed margin to prevent unwanted spacing */
         padding: 10px; /* Add padding for better spacing */
         margin-bottom: 10px; /* Add margin to separate from the map */
-        z-index: 1;
+        z-index: 2;
         scrollbar-width: none;
       }
 
@@ -106,16 +106,24 @@
         margin-right: 10px;
       }
 
-      .highlight {
-        animation: highlight 1s infinite alternate;
+      .collectible.selected {
+        animation: highlightWhite 1s infinite alternate;
+        z-index: 1;
       }
 
-      @keyframes highlight {
+      .collectible.selected-temp {
+        animation: highlightWhite 1s infinite alternate;
+        z-index: 1;
+      }
+
+      @keyframes highlightWhite {
         from {
-          filter: brightness(1);
+          filter: grayscale(100%) brightness(0.67);
         }
         to {
-          filter: brightness(2);
+          filter: grayscale(100%) brightness(0.67) drop-shadow(0px 0px 5px #bbb)
+            drop-shadow(0px 0px 10px #ccc) drop-shadow(0px 0px 15px #ddd)
+            drop-shadow(0px 0px 20px #eee) drop-shadow(0px 0px 25px #fff);
         }
       }
 
@@ -223,6 +231,11 @@
         } else {
           fitMapToContainer();
         }
+
+        // Load the regionStates (open/closed state) if available
+        const regionStates = JSON.parse(
+          localStorage.getItem("regionStates") || "{}",
+        );
       }
 
       function fitMapToContainer() {
@@ -260,6 +273,19 @@
         });
 
         updateCounter();
+
+        const selectedIndex = JSON.parse(
+          localStorage.getItem("selected") || "-1",
+        );
+
+        if (selectedIndex >= 0) {
+          document
+            .querySelectorAll(".collectible")
+            .forEach((marker) => marker.classList.remove("selected"));
+          document
+            .querySelectorAll(".collectible")
+            [selectedIndex].classList.add("selected");
+        }
       }
       function updateRegionCounter(regionIndex, regionHeader, collected) {
         const regionCollectibles = collectibles.filter(
@@ -323,6 +349,11 @@
       function populateSidePanel() {
         const regions = {};
 
+        // Get the saved region state from localStorage (open/closed state)
+        const regionStates = JSON.parse(
+          localStorage.getItem("regionStates") || "{}",
+        );
+
         // Group collectibles by region
         collectibles.forEach((chum, index) => {
           if (!regions[chum.region]) {
@@ -344,15 +375,27 @@
           const regionHeader = document.createElement("div");
           regionHeader.classList.add("region-header");
           regionHeader.textContent = `${region} 0/${regions[region].length}`;
+
+          // Add a click event to toggle the visibility of region content
           regionHeader.addEventListener("click", () => {
             const content = regionDiv.querySelector(".region-content");
-            content.style.display =
-              content.style.display === "none" ? "block" : "none";
+            const isCurrentlyVisible = content.style.display !== "none";
+            content.style.display = isCurrentlyVisible ? "none" : "block";
+
+            // Update the regionStates object and save it to localStorage
+            regionStates[region] = !isCurrentlyVisible;
+            localStorage.setItem("regionStates", JSON.stringify(regionStates));
           });
 
           const regionContent = document.createElement("div");
           regionContent.classList.add("region-content");
-          regionContent.style.display = "none";
+
+          // Check the saved state for this region to set initial visibility
+          if (regionStates[region]) {
+            regionContent.style.display = "block";
+          } else {
+            regionContent.style.display = "none";
+          }
 
           regions[region].forEach((index) => {
             const chumItem = document.createElement("div");
@@ -377,10 +420,11 @@
             chumLabel.addEventListener("click", () => {
               document
                 .querySelectorAll(".collectible")
-                .forEach((marker) => marker.classList.remove("highlight"));
+                .forEach((marker) => marker.classList.remove("selected"));
               document
                 .querySelectorAll(".collectible")
-                [index].classList.add("highlight");
+                [index].classList.add("selected");
+              localStorage.setItem("selected", index);
             });
 
             chumItem.appendChild(checkbox);
@@ -463,7 +507,6 @@
         updateTransform();
       });
 
-      // window.addEventListener("resize", fitMapToContainer);
       window.addEventListener("load", () => {
         loadStateFromLocalStorage();
         fetch("chums.json")
