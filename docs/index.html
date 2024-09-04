@@ -13,23 +13,47 @@
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        height: 100vh;
         background-color: #333;
         font-family: "Century Schoolbook", serif;
         color: white;
       }
 
+      body {
+        margin: 0;
+        overflow: hidden;
+        display: flex; /* Add display flex to body */
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        background-color: #333;
+        font-family: "Century Schoolbook", serif;
+        color: white;
+        height: 100vh; /* Ensure body takes full height */
+      }
+
+      #container {
+        display: flex;
+        flex-direction: row; /* Ensure the side panel and map are side by side */
+        height: 100%;
+        width: 100%;
+      }
+
       #side-panel {
-        width: 300px;
+        flex: 0 0 25%; /* Maintain side panel width */
         background-color: #444;
         overflow-y: auto;
-        padding: 10px;
-        margin-bottom: 10px;
-        position: absolute;
-        left: 0px;
-        top: 0px;
-        height: 100%;
-        box-shadow: 5px 0px 10px rgba(0, 0, 0, 0.5);
+        height: 100%; /* Ensure it takes full height of its container */
+        position: relative; /* Change to relative for better alignment */
+        /* margin-bottom: 10px; */ /* Removed margin to prevent unwanted spacing */
+        padding: 10px; /* Add padding for better spacing */
+        margin-bottom: 10px; /* Add margin to separate from the map */
+      }
+
+      #map-container {
+        flex: 1; /* Allow it to take the remaining space */
+        overflow: hidden;
+        cursor: grab;
+        height: 100%; /* Ensure it takes full height of its container */
       }
 
       #reset-btn {
@@ -48,6 +72,8 @@
       #counter {
         font-size: 24px;
         text-align: center;
+        margin: inherit;
+        padding: inherit;
       }
 
       .region {
@@ -91,14 +117,6 @@
         }
       }
 
-      #map-container {
-        position: relative;
-        width: 100vw;
-        height: calc(100vh - 40px); /* Adjusting for counter height */
-        overflow: hidden;
-        cursor: grab;
-      }
-
       #map {
         display: block;
         transform-origin: top left;
@@ -135,19 +153,20 @@
     </style>
   </head>
   <body>
-    <div id="map-container">
-      <img
-        id="map"
-        src="Sable-Chum-Map-90.webp"
-        alt="Game Map"
-        draggable="false"
-        loading="lazy"
-      />
-    </div>
-    <div id="side-panel">
-      <button id="reset-btn">Reset View</button>
-
-      <div id="counter">0/165</div>
+    <div id="container">
+      <div id="side-panel">
+        <button id="reset-btn">Reset View</button>
+        <div id="counter">0/165</div>
+      </div>
+      <div id="map-container">
+        <img
+          id="map"
+          src="Sable-Chum-Map-90.webp"
+          alt="Game Map"
+          draggable="false"
+          loading="lazy"
+        />
+      </div>
     </div>
     <script>
       const collectibles = [];
@@ -168,11 +187,12 @@
 
       function updateTransform() {
         map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+        const offset = mapContainer.getBoundingClientRect().left;
 
         document.querySelectorAll(".collectible").forEach((marker, index) => {
           const coord = collectibles[index];
 
-          const transformedX = (coord.x - 6) * scale + originX - 25;
+          const transformedX = offset + (coord.x - 6) * scale + originX - 25;
           const transformedY = (coord.y + 5) * scale + originY - 16;
 
           const markerScale = Math.max(scale, 32 / marker.offsetWidth);
