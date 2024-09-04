@@ -114,7 +114,6 @@
           scale = savedState.scale;
           originX = savedState.originX;
           originY = savedState.originY;
-          updateTransform();
         } else {
           fitMapToContainer(); // Fit map initially if no saved state
         }
@@ -134,8 +133,6 @@
         // Center the map
         originX = (containerRect.width - naturalWidth * scale) / 2;
         originY = (containerRect.height - naturalHeight * scale) / 2;
-
-        updateTransform();
       }
 
       function loadCollectibles() {
@@ -239,7 +236,12 @@
         mapContainer.style.cursor = "grab";
       });
 
-      window.addEventListener("resize", fitMapToContainer);
+      counter.addEventListener("click", () => {
+        fitMapToContainer();
+        updateTransform();
+      });
+
+      // window.addEventListener("resize", fitMapToContainer);
       window.addEventListener("load", () => {
         loadStateFromLocalStorage();
         fetch("chums.json")
