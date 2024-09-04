@@ -241,11 +241,13 @@
           originX,
           originY,
         };
-        localStorage.setItem("mapState", JSON.stringify(state));
+        localStorage.setItem("chum-map-mapState", JSON.stringify(state));
       }
 
       function loadStateFromLocalStorage() {
-        const savedState = JSON.parse(localStorage.getItem("mapState"));
+        const savedState = JSON.parse(
+          localStorage.getItem("chum-map-mapState"),
+        );
         if (savedState) {
           scale = savedState.scale;
           originX = savedState.originX;
@@ -256,7 +258,7 @@
 
         // Load the regionStates (open/closed state) if available
         const regionStates = JSON.parse(
-          localStorage.getItem("regionStates") || "{}",
+          localStorage.getItem("chum-map-regionStates") || "{}",
         );
       }
 
@@ -275,7 +277,9 @@
       }
 
       function loadCollectibles() {
-        const collected = JSON.parse(localStorage.getItem("collected") || "[]");
+        const collected = JSON.parse(
+          localStorage.getItem("chum-map-collected") || "[]",
+        );
 
         collectibles.forEach((coord, index) => {
           const featherImg = document.createElement("img");
@@ -297,7 +301,7 @@
         updateCounter();
 
         const selectedIndex = JSON.parse(
-          localStorage.getItem("selected") || "-1",
+          localStorage.getItem("chum-map-selected") || "-1",
         );
 
         if (selectedIndex >= 0) {
@@ -335,7 +339,9 @@
             featherImg.classList.remove("selected");
           }
 
-          let collected = JSON.parse(localStorage.getItem("collected") || "[]");
+          let collected = JSON.parse(
+            localStorage.getItem("chum-map-collected") || "[]",
+          );
 
           const checkbox = document.querySelector(
             `#chum-${index} input[type="checkbox"]`,
@@ -359,7 +365,7 @@
           }
 
           // Save the updated collected state
-          localStorage.setItem("collected", JSON.stringify(collected));
+          localStorage.setItem("chum-map-collected", JSON.stringify(collected));
 
           // Update region and total counters
           updateRegionCounter(
@@ -372,7 +378,9 @@
       }
 
       function updateCounter() {
-        const collected = JSON.parse(localStorage.getItem("collected") || "[]");
+        const collected = JSON.parse(
+          localStorage.getItem("chum-map-collected") || "[]",
+        );
         counter.textContent = `${collected.length}/${collectibles.length}`;
       }
 
@@ -381,7 +389,7 @@
 
         // Get the saved region state from localStorage (open/closed state)
         const regionStates = JSON.parse(
-          localStorage.getItem("regionStates") || "{}",
+          localStorage.getItem("chum-map-regionStates") || "{}",
         );
 
         // Group collectibles by region
@@ -414,7 +422,10 @@
 
             // Update the regionStates object and save it to localStorage
             regionStates[region] = !isCurrentlyVisible;
-            localStorage.setItem("regionStates", JSON.stringify(regionStates));
+            localStorage.setItem(
+              "chum-map-regionStates",
+              JSON.stringify(regionStates),
+            );
           });
 
           const regionContent = document.createElement("div");
@@ -435,7 +446,7 @@
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.checked = JSON.parse(
-              localStorage.getItem("collected") || "[]",
+              localStorage.getItem("chum-map-collected") || "[]",
             ).includes(index);
             checkbox.addEventListener("change", () => {
               toggleCollectible(
@@ -451,7 +462,7 @@
               const marker = document.querySelectorAll(".collectible")[index];
               if (marker.classList.contains("selected")) {
                 marker.classList.remove("selected");
-                localStorage.setItem("selected", -1);
+                localStorage.setItem("chum-map-selected", -1);
                 chumLabel.classList.remove("selected");
               } else {
                 document
@@ -463,7 +474,7 @@
                 document
                   .querySelectorAll(".collectible")
                   [index].classList.add("selected");
-                localStorage.setItem("selected", index);
+                localStorage.setItem("chum-map-selected", index);
                 chumLabel.classList.add("selected");
               }
             });
@@ -486,12 +497,12 @@
           updateRegionCounter(
             regionIndex,
             regionHeader,
-            JSON.parse(localStorage.getItem("collected") || "[]"),
+            JSON.parse(localStorage.getItem("chum-map-collected") || "[]"),
           );
         });
 
         const selectedIndex = JSON.parse(
-          localStorage.getItem("selected") || "-1",
+          localStorage.getItem("chum-map-selected") || "-1",
         );
 
         if (selectedIndex >= 0) {
