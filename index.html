@@ -55,6 +55,16 @@
       .collected {
         filter: grayscale(100%) brightness(0.67);
       }
+
+      .collectible:hover {
+        cursor: pointer;
+        filter: drop-shadow(0 0 5px #cccc33) drop-shadow(0 0 10px #cccc33);
+      }
+
+      .collected:hover {
+        filter: drop-shadow(0px 0px 5px white) drop-shadow(0px 0px 10px white)
+          drop-shadow(0px 0px 15px white) grayscale(100%) brightness(0.67);
+      }
     </style>
   </head>
   <body>
