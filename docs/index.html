@@ -83,7 +83,6 @@
       }
 
       .region-header {
-        cursor: pointer;
         padding: 5px;
         background-color: #555;
         border: 1px solid #666;
@@ -104,11 +103,6 @@
 
       .chum-item:hover {
         text-decoration: underline;
-      }
-
-      label,
-      chum-item {
-        cursor: pointer;
       }
 
       /* underline too */
@@ -179,7 +173,7 @@
       }
 
       .collectible:hover {
-        cursor: pointer;
+        cursor: default;
         filter: drop-shadow(0 0 5px #cccc33) drop-shadow(0 0 10px #cccc33);
         z-index: 1;
       }
@@ -453,7 +447,7 @@
 
             const chumLabel = document.createElement("label");
             chumLabel.textContent = `Chum ${++chumIndex}`;
-            chumLabel.addEventListener("click", () => {
+            chumItem.addEventListener("click", () => {
               const marker = document.querySelectorAll(".collectible")[index];
               if (marker.classList.contains("selected")) {
                 marker.classList.remove("selected");
