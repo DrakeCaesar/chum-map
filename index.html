@@ -47,7 +47,7 @@
         fill: currentColor;
         stroke: currentColor;
         width: 50px;
-        height: 50px;
+        height: 32px;
         left: 0px;
         top: 0px;
       }
@@ -87,7 +87,7 @@
           const coord = collectibles[index];
           // Calculate the new position based on the current scale and origin
           const transformedX = (coord.x - 6) * scale + originX - 25;
-          const transformedY = (coord.y + 5) * scale + originY - 25;
+          const transformedY = (coord.y + 5) * scale + originY - 16;
 
           const markerScale = Math.max(scale, 32 / marker.offsetWidth);
 
