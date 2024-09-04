@@ -21,41 +21,41 @@
       body {
         margin: 0;
         overflow: hidden;
-        display: flex; /* Add display flex to body */
+        display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
         background-color: #333;
         font-family: "Century Schoolbook", serif;
         color: white;
-        height: 100vh; /* Ensure body takes full height */
+        height: 100vh;
       }
 
       #container {
         display: flex;
-        flex-direction: row; /* Ensure the side panel and map are side by side */
+        flex-direction: row;
         height: 100%;
         width: 100%;
       }
 
       #side-panel {
-        flex: 0 0 250px; /* Maintain side panel width */
+        flex: 0 0 250px;
         background-color: #444;
         overflow-y: auto;
-        height: 100%; /* Ensure it takes full height of its container */
-        position: relative; /* Change to relative for better alignment */
-        /* margin-bottom: 10px; */ /* Removed margin to prevent unwanted spacing */
-        padding: 10px; /* Add padding for better spacing */
-        margin-bottom: 10px; /* Add margin to separate from the map */
+        height: 100%;
+        position: relative;
+
+        padding: 10px;
+        margin-bottom: 10px;
         z-index: 2;
         scrollbar-width: none;
       }
 
       #map-container {
-        flex: 1; /* Allow it to take the remaining space */
+        flex: 1;
         overflow: hidden;
         cursor: grab;
-        height: 100%; /* Ensure it takes full height of its container */
+        height: 100%;
       }
 
       #reset-btn {
@@ -109,7 +109,6 @@
         text-decoration: underline;
       }
 
-      /* underline too */
       .chum-item label.selected {
         text-decoration: underline;
       }
@@ -258,7 +257,6 @@
           fitMapToContainer();
         }
 
-        // Load the regionStates (open/closed state) if available
         const regionStates = JSON.parse(
           localStorage.getItem("chum-map-regionStates") || "{}",
         );
@@ -294,7 +292,7 @@
           }
 
           featherImg.addEventListener("click", () => {
-            toggleCollectible(index, featherImg); // Ensure the marker toggles the checkbox
+            toggleCollectible(index, featherImg);
           });
 
           mapContainer.appendChild(featherImg);
@@ -324,11 +322,9 @@
           collected.includes(chum.index),
         );
 
-        // Extract the region name (before the first number in the header text)
         const headerText = regionHeader.textContent;
         const regionName = headerText.replace(/\d+\/\d+$/, "").trim();
 
-        // Update the header with the region name and the new collectible count
         regionHeader.textContent = `${regionName} ${collectedInRegion.length}/${regionCollectibles.length}`;
       }
 
@@ -353,23 +349,20 @@
               collectibles[index].regionIndex
             ];
 
-          // Toggle the collected status
           if (collected.includes(index)) {
             collected = collected.filter((i) => i !== index);
             featherImg.classList.remove("collected");
 
-            if (toggleCheckbox) checkbox.checked = false; // Uncheck the checkbox
+            if (toggleCheckbox) checkbox.checked = false;
           } else {
             collected.push(index);
             featherImg.classList.add("collected");
 
-            if (toggleCheckbox) checkbox.checked = true; // Check the checkbox
+            if (toggleCheckbox) checkbox.checked = true;
           }
 
-          // Save the updated collected state
           localStorage.setItem("chum-map-collected", JSON.stringify(collected));
 
-          // Update region and total counters
           updateRegionCounter(
             collectibles[index].regionIndex,
             regionHeader,
@@ -389,21 +382,18 @@
       function populateSidePanel() {
         const regions = {};
 
-        // Get the saved region state from localStorage (open/closed state)
         const regionStates = JSON.parse(
           localStorage.getItem("chum-map-regionStates") || "{}",
         );
 
-        // Group collectibles by region
         collectibles.forEach((chum, index) => {
           if (!regions[chum.region]) {
             regions[chum.region] = [];
           }
-          chum.index = index; // Add index to the collectible for reference
+          chum.index = index;
           regions[chum.region].push(index);
         });
 
-        // Sort regions alphabetically
         const sortedRegionNames = Object.keys(regions).sort();
 
         let chumIndex = 0;
@@ -421,7 +411,6 @@
             const isCurrentlyVisible = content.style.display !== "none";
             content.style.display = isCurrentlyVisible ? "none" : "block";
 
-            // Update the regionStates object and save it to localStorage
             regionStates[region] = !isCurrentlyVisible;
             localStorage.setItem(
               "chum-map-regionStates",
@@ -432,7 +421,6 @@
           const regionContent = document.createElement("div");
           regionContent.classList.add("region-content");
 
-          // Check the saved state for this region to set initial visibility
           if (regionStates[region]) {
             regionContent.style.display = "block";
           } else {
@@ -484,7 +472,6 @@
                 .querySelectorAll(".collectible")
                 .forEach((marker) => marker.classList.remove("selected-temp"));
 
-              // Assuming 'index' is defined somewhere in your code.
               const marker = document.querySelectorAll(".collectible")[index];
               if (marker) {
                 marker.classList.add("selected-temp");
@@ -492,7 +479,6 @@
             });
 
             chumItem.addEventListener("mouseout", () => {
-              // Optionally, remove the 'selected-temp' class when the mouse leaves
               document
                 .querySelectorAll(".collectible")
                 .forEach((marker) => marker.classList.remove("selected-temp"));
@@ -507,12 +493,10 @@
           regionDiv.appendChild(regionContent);
           sidePanel.appendChild(regionDiv);
 
-          // Update regionIndex to track the sorted order for updating later
           regions[region].forEach((index) => {
             collectibles[index].regionIndex = regionIndex;
           });
 
-          // Update the region counter initially
           updateRegionCounter(
             regionIndex,
             regionHeader,
