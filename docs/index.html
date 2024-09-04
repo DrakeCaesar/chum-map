@@ -125,23 +125,19 @@
       let wasDragging = false;
 
       function updateTransform() {
-        // Update the map transformation
         map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
 
-        // Update the position and scale of each collectible
         document.querySelectorAll(".collectible").forEach((marker, index) => {
           const coord = collectibles[index];
-          // Calculate the new position based on the current scale and origin
+
           const transformedX = (coord.x - 6) * scale + originX - 25;
           const transformedY = (coord.y + 5) * scale + originY - 16;
 
           const markerScale = Math.max(scale, 32 / marker.offsetWidth);
 
-          // Apply the position and scaling to the marker
           marker.style.transform = `translate(${transformedX}px, ${transformedY}px) scale(${markerScale})`;
         });
 
-        // Save the current state to local storage
         saveStateToLocalStorage();
       }
 
@@ -161,7 +157,7 @@
           originX = savedState.originX;
           originY = savedState.originY;
         } else {
-          fitMapToContainer(); // Fit map initially if no saved state
+          fitMapToContainer();
         }
       }
 
@@ -173,10 +169,8 @@
         const scaleX = containerRect.width / naturalWidth;
         const scaleY = containerRect.height / naturalHeight;
 
-        // Choose the smaller scale to fit the map within the container
         scale = Math.min(scaleX, scaleY);
 
-        // Center the map
         originX = (containerRect.width - naturalWidth * scale) / 2;
         originY = (containerRect.height - naturalHeight * scale) / 2;
       }
@@ -187,28 +181,24 @@
         collectibles.forEach((coord, index) => {
           const featherImg = document.createElement("img");
           featherImg.classList.add("collectible");
-          featherImg.src = "feather.svg"; // Feather SVG file
+          featherImg.src = "feather.svg";
           featherImg.draggable = false;
 
-          // If the collectible is already collected, add the class
           if (collected.includes(index)) {
             featherImg.classList.add("collected");
           }
 
-          // Add event listener to toggle collectible state
           featherImg.addEventListener("click", () => {
             toggleCollectible(index, featherImg);
           });
 
-          // Append the image directly to the mapContainer
           mapContainer.appendChild(featherImg);
         });
 
-        updateCounter(); // Update counter on load
+        updateCounter();
       }
 
       function toggleCollectible(index, featherImg) {
-        // Only proceed if dragging did not occur
         if (!wasDragging) {
           let collected = JSON.parse(localStorage.getItem("collected") || "[]");
 
@@ -220,10 +210,9 @@
             featherImg.classList.add("collected");
           }
 
-          // Save the updated collected list to localStorage
           localStorage.setItem("collected", JSON.stringify(collected));
 
-          updateCounter(); // Update counter when a collectible is toggled
+          updateCounter();
         }
       }
 
@@ -232,7 +221,6 @@
         counter.textContent = `${collected.length}/${collectibles.length}`;
       }
 
-      // Disable image dragging behavior
       map.addEventListener("dragstart", (event) => event.preventDefault());
 
       mapContainer.addEventListener("wheel", (event) => {
@@ -245,11 +233,9 @@
         const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
         const newScale = scale * zoomFactor;
 
-        // Calculate the new origin to keep the mouse position in the same place
         originX = mouseX * (scale - newScale) + originX;
         originY = mouseY * (scale - newScale) + originY;
 
-        // Apply the new scale
         scale = newScale;
 
         updateTransform();
@@ -257,7 +243,7 @@
 
       mapContainer.addEventListener("mousedown", (event) => {
         isDragging = true;
-        wasDragging = false; // Reset flag on mousedown
+        wasDragging = false;
         startX = event.clientX - originX;
         startY = event.clientY - originY;
         mapContainer.style.cursor = "grabbing";
@@ -268,7 +254,7 @@
           originX = event.clientX - startX;
           originY = event.clientY - startY;
           updateTransform();
-          wasDragging = true; // Set flag to true when movement occurs
+          wasDragging = true;
         }
       });
 
@@ -292,7 +278,6 @@
         updateTransform();
       });
 
-      // window.addEventListener("resize", fitMapToContainer);
       window.addEventListener("load", () => {
         loadStateFromLocalStorage();
         fetch("chums.json")
