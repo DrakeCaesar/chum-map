@@ -19,9 +19,36 @@
         color: white;
       }
 
+      #counter-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 10px;
+        position: relative;
+      }
+
+      #reset-btn {
+        font-size: 18px;
+        font-family: inherit;
+        padding: 5px 10px;
+        margin: 10px;
+        background-color: #555;
+        color: white;
+        border: none;
+        cursor: pointer;
+        position: absolute;
+      }
+
+      #reset-btn:hover {
+        background-color: #777;
+      }
+
       #counter {
         font-size: 24px;
-        margin: 10px;
+        margin: 0 auto; /* Center the counter */
+        text-align: center;
+        flex-grow: 1;
       }
 
       #map-container {
@@ -68,7 +95,10 @@
     </style>
   </head>
   <body>
-    <div id="counter">0/0</div>
+    <div id="counter-container">
+      <button id="reset-btn">Reset View</button>
+      <div id="counter">0/165</div>
+    </div>
     <div id="map-container">
       <img id="map" src="Sable-Chum-Map.png" alt="Game Map" draggable="false" />
       <!-- https://i.ibb.co/CVLLx3j/Sable-Chum-Map.png -->
@@ -79,6 +109,7 @@
       const mapContainer = document.getElementById("map-container");
       const map = document.getElementById("map");
       const counter = document.getElementById("counter");
+      const reset = document.getElementById("reset-btn");
 
       let scale = 1;
       let originX = 0;
@@ -247,6 +278,11 @@
       });
 
       counter.addEventListener("click", () => {
+        fitMapToContainer();
+        updateTransform();
+      });
+
+      reset.addEventListener("click", () => {
         fitMapToContainer();
         updateTransform();
       });
