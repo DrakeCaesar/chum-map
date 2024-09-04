@@ -335,6 +335,8 @@
         // Sort regions alphabetically
         const sortedRegionNames = Object.keys(regions).sort();
 
+        let chumIndex = 0;
+
         sortedRegionNames.forEach((region, regionIndex) => {
           const regionDiv = document.createElement("div");
           regionDiv.classList.add("region");
@@ -371,7 +373,7 @@
             });
 
             const chumLabel = document.createElement("label");
-            chumLabel.textContent = `Chum ${index + 1}`;
+            chumLabel.textContent = `Chum ${++chumIndex}`;
             chumLabel.addEventListener("click", () => {
               document
                 .querySelectorAll(".collectible")
