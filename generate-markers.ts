@@ -1,14 +1,28 @@
 import fs from "fs";
 import { Jimp } from "jimp";
 
-async function countGreenPixelGroups(imagePath: string): Promise<void> {
+async function generateMarkers(
+  imagePath: string,
+  regionImagePath: string,
+): Promise<void> {
   try {
     const image = await Jimp.read(imagePath);
+    const regionImage = await Jimp.read(regionImagePath);
     const width = image.bitmap.width;
     const height = image.bitmap.height;
     const visited = new Array(width * height).fill(false);
     let greenPixelGroupCount = 0;
-    const groupCenters: { x: number; y: number }[] = [];
+    const groupCenters: { x: number; y: number; region: string }[] = [];
+
+    const regionColors: { [key: string]: string } = {
+      "#BD978F": "Redsee",
+      "#C1C1C1": "Sodic Waste",
+      "#C1AE90": "Sarsee",
+      "#C18160": "Badlands",
+      "#657881": "Hakoa",
+      "#C1B2AC": "The Wash",
+      "#C18D4A": "Ewer",
+    };
 
     function isGreenPixel(x: number, y: number): boolean {
       const idx = (y * width + x) * 4;
@@ -16,6 +30,24 @@ async function countGreenPixelGroups(imagePath: string): Promise<void> {
       const green = image.bitmap.data[idx + 1];
       const blue = image.bitmap.data[idx + 2];
       return red === 0 && green === 255 && blue === 0;
+    }
+
+    function getRegion(x: number, y: number): string {
+      const idx = (y * width + x) * 4;
+      const red = regionImage.bitmap.data[idx + 0]
+        .toString(16)
+        .padStart(2, "0")
+        .toUpperCase();
+      const green = regionImage.bitmap.data[idx + 1]
+        .toString(16)
+        .padStart(2, "0")
+        .toUpperCase();
+      const blue = regionImage.bitmap.data[idx + 2]
+        .toString(16)
+        .padStart(2, "0")
+        .toUpperCase();
+      const colorKey = `#${red}${green}${blue}`;
+      return regionColors[colorKey] || "Unknown";
     }
 
     function floodFill(x: number, y: number): { x: number; y: number }[] {
@@ -52,7 +84,8 @@ async function countGreenPixelGroups(imagePath: string): Promise<void> {
           const centerY = Math.round(
             groupPixels.reduce((sum, p) => sum + p.y, 0) / groupPixels.length,
           );
-          groupCenters.push({ x: centerX, y: centerY });
+          const region = getRegion(centerX, centerY);
+          groupCenters.push({ x: centerX, y: centerY, region });
         }
       }
     }
@@ -66,4 +99,4 @@ async function countGreenPixelGroups(imagePath: string): Promise<void> {
   }
 }
 
-countGreenPixelGroups("Sable-Chum-Map-Processing.png");
+generateMarkers("Sable-Chum-Map-Processing.png", "Sable-Chum-Map-regions.png");
