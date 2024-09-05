@@ -229,7 +229,10 @@
           const transformedY = (coord.y + 5) * scale + originY - 16;
 
           const markerScale = Math.max(scale, 32 / marker.offsetWidth);
-
+          // const markerScale = Math.min(
+          //   Math.max(scale, 32 / marker.offsetWidth),
+          //   1,
+          // );
           marker.style.transform = `translate(${transformedX}px, ${transformedY}px) scale(${markerScale})`;
         });
 
