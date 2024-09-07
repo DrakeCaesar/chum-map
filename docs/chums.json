@@ -695,6 +695,21 @@
     "region": "Hakoa"
   },
   {
+    "x": 5172,
+    "y": 4807,
+    "region": "The Wash"
+  },
+  {
+    "x": 5140,
+    "y": 4808,
+    "region": "The Wash"
+  },
+  {
+    "x": 5114,
+    "y": 4811,
+    "region": "The Wash"
+  },
+  {
     "x": 3511,
     "y": 4832,
     "region": "Badlands"
@@ -717,21 +732,6 @@
   {
     "x": 6078,
     "y": 5142,
-    "region": "The Wash"
-  },
-  {
-    "x": 4987,
-    "y": 5203,
-    "region": "The Wash"
-  },
-  {
-    "x": 4991,
-    "y": 5222,
-    "region": "The Wash"
-  },
-  {
-    "x": 4964,
-    "y": 5235,
     "region": "The Wash"
   },
   {
